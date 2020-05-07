@@ -1,0 +1,26 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "test Program",
+            "program": "${workspaceFolder}/common_js_test/b.js",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "blog Program",
+            "program": "${workspaceFolder}/blog-1/bin/www.js",
+            "cwd": "${workspaceFolder}",
+            "serverReadyAction": {
+                "pattern": "listening on port ([0-9]+)",
+                "uriFormat": "http://localhost:8000",
+                "action": "openExternally"
+              }
+        },
+    ]
+}

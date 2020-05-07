@@ -29,12 +29,22 @@
 // 进程内存有限 访问量过大怎么办 内存暴增怎么办
 // 第二 正式线上运行的是多进程 进程之间内存无法共享
 
+//-----------------mysql v8.0后版本链接不上的解决方案----------------------  
+// mysql -u root -p
+// ALTER USER 'root'@'localhost' IDENTIFIED BY 'password' PASSWORD EXPIRE NEVER;
+// ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123';
+// FLUSH PRIVILEGES;
+// 作者：car
+// 链接：https://www.imooc.com/article/details/id/45589
+// 来源：慕课网
+
 const handleBlogRouter = require('./src/router/blog');
 const handleUserRouter = require('./src/router/user');
+const { get, set } = require('./src/db/redis');
 
 const querystring = require('querystring');
 
-let SESSION_DATA = {};
+// let SESSION_DATA = {};
 
 const getPostData = (req) => {
     return new Promise((resolve, reject) => {
@@ -89,21 +99,44 @@ const serverHandle = (req, res) => {
     });
     console.log("req.cookie = ", req.cookie);
 
-    //解析session
+    // //解析session
+    // let needSetCookie = false;
+    // let userId = req.cookie['userid'];
+    // if (userId) {
+    //     if (!SESSION_DATA[userId]) {
+    //         SESSION_DATA[userId] = {};
+    //     }
+    // } else {
+    //     needSetCookie = true;
+    //     userId = `${Date.now()}`;
+    //     SESSION_DATA[userId] = {};
+    // }
+    // req.session = SESSION_DATA[userId];
+
+    // 解析 session （使用 redis）
     let needSetCookie = false;
     let userId = req.cookie['userid'];
-    if (userId) {
-        if (!SESSION_DATA[userId]) {
-            SESSION_DATA[userId] = {};
-        }
-    } else {
+    req.sessionId = userId;
+    if (!userId) {
         needSetCookie = true;
-        userId = `${Date.now()}_${Math.random()}`;
-        SESSION_DATA[userId] = {};
+        userId = `${Date.now()}`;
+        set(req.sessionId, {});
     }
-    req.session = SESSION_DATA[userId];
+    // else{
+    //     req.sessionData = get(req.sessionId);
+    // }
 
-    getPostData(req).then((postData) => {
+    get(req.sessionId).then(sessionData => {
+        if (sessionData == null) {
+            // 初始化 redis 中的 session 值
+            set(req.sessionId, {});
+            // 设置 session
+            req.session = {};
+        } else {
+            req.session = sessionData
+        }
+        return getPostData(req)
+    }).then((postData) => {
         req.body = postData;
 
         const blogResult = handleBlogRouter(req, res);
@@ -131,7 +164,7 @@ const serverHandle = (req, res) => {
             return;
         }
 
-
+        // 未命中路由，返回 404
         res.writeHead(404, {
             "Content-type": "application/textplain"
         });
