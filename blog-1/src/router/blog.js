@@ -10,11 +10,24 @@ const {
     ErrorModel
 } = require('../model/resModel');
 
+const loginCheck = (req)=>{
+    if(!req.session.username){
+        return Promise.resolve(
+            new ErrorModel('尚未登录')
+        )
+    }
+}
+
 
 const handBlogRouter = (req, res) => {
     if (req.method === 'GET' && req.path === '/api/blog/list') {
         let author = req.query.author || ''
         const keyword = req.query.keyword || ''
+        let loginResult = loginCheck(req);
+        if(loginResult){
+            return loginResult;
+        }
+        author = req.session.username;
         const result = getList(author, keyword)
         return result.then(listData => {
             return new SuccessModel(listData)
@@ -28,14 +41,20 @@ const handBlogRouter = (req, res) => {
         })
     }
     if (req.method === 'POST' && req.path === '/api/blog/new') {
-        req.body.author = "zhangsan";
+        let loginResult = loginCheck(req);
+        if(loginResult){
+            return loginResult;
+        }
         const result = newBlog(req.body);
         return result.then(data => {
             return new SuccessModel(data);
         })
     }
     if (req.method === 'POST' && req.path === '/api/blog/update') {
-        console.log('update Blogdata...', req.query.id, req.body);
+        let loginResult = loginCheck(req);
+        if(loginResult){
+            return loginResult;
+        }
         const result = updateBlog(req.query.id , req.body);
         return result.then(val => {
             console.log('val' , val);
@@ -47,7 +66,10 @@ const handBlogRouter = (req, res) => {
         })
     }
     if (req.method === 'POST' && req.path === '/api/blog/del') {
-        let author = "zhangsan";
+        let loginResult = loginCheck(req);
+        if(loginResult){
+            return loginResult;
+        }
         const result = delBlog(req.query.id , author);
         return result.then(val=>{
             if(val){

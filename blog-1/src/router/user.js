@@ -17,13 +17,13 @@ const getCookieExpires = () => {
 const handleUserRouter = (req, res) => {
     const method = req.method // GET POST
     // 登录
-    if (method === 'GET' && req.path === '/api/user/login') {
-        let {
-            username,
-            password
-        } = req.query;
-        // const result = login(req.body.username , req.body.password);
-        let result = login(username, password);
+    if (method === 'POST' && req.path === '/api/user/login') {
+        // let {
+        //     username,
+        //     password
+        // } = req.query;
+        const result = login(req.body.username , req.body.password);
+        // let result = login(username, password);
         return result.then(data => {
             if (data.username) {
                 //设置session
@@ -43,19 +43,19 @@ const handleUserRouter = (req, res) => {
         })
     }
 
-    //登陆测试
-    if(method === 'GET' && req.path === '/api/user/login_test'){
-        if(req.session.username){
-            return Promise.resolve(
-                new SuccessModel({
-                    session : req.session
-                })
-            )
-        }
-        return Promise.resolve(
-            new ErrorModel('尚未登陆')
-        )
-    }
+    // //登陆测试
+    // if(method === 'GET' && req.path === '/api/user/login_test'){
+    //     if(req.session.username){
+    //         return Promise.resolve(
+    //             new SuccessModel({
+    //                 session : req.session
+    //             })
+    //         )
+    //     }
+    //     return Promise.resolve(
+    //         new ErrorModel('尚未登陆')
+    //     )
+    // }
 
     
 }

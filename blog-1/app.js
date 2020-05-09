@@ -74,7 +74,6 @@ const getPostData = (req) => {
 const getCookieExpires = () => {
     const d = new Date();
     d.setTime(d.getTime() + (24 * 60 * 60 * 1000));
-    console.log('d.toGMTString is', d.toGMTString());
     return d.toGMTString();
 }
 
@@ -97,21 +96,8 @@ const serverHandle = (req, res) => {
         const val = item.split("=")[1].trim();
         req.cookie[key] = val;
     });
-    console.log("req.cookie = ", req.cookie);
 
-    // //解析session
-    // let needSetCookie = false;
-    // let userId = req.cookie['userid'];
-    // if (userId) {
-    //     if (!SESSION_DATA[userId]) {
-    //         SESSION_DATA[userId] = {};
-    //     }
-    // } else {
-    //     needSetCookie = true;
-    //     userId = `${Date.now()}`;
-    //     SESSION_DATA[userId] = {};
-    // }
-    // req.session = SESSION_DATA[userId];
+
 
     // 解析 session （使用 redis）
     let needSetCookie = false;
@@ -119,13 +105,10 @@ const serverHandle = (req, res) => {
     if (!userId) {
         needSetCookie = true;
         userId = `${Date.now()}`;
-        set(req.sessionId, {});
+        set(userId, {});
     }
     req.sessionId = userId;
-    // else{
-    //     req.sessionData = get(req.sessionId);
-    // }
-
+    console.log("登录userId = ", userId);
     get(req.sessionId).then(sessionData => {
         if (sessionData == null) {
             // 初始化 redis 中的 session 值
@@ -135,17 +118,17 @@ const serverHandle = (req, res) => {
         } else {
             req.session = sessionData
         }
-        return getPostData(req);
+        return getPostData(req)
     }).then((postData) => {
         req.body = postData;
 
         const blogResult = handleBlogRouter(req, res);
         if (blogResult) {
             if (needSetCookie) {
+                console.log("Set-Cookie"  , userId);
                 res.setHeader('Set-Cookie', `userid=${userId};httpOnly;expires=${getCookieExpires()}`)
             }
             blogResult.then(blogData => {
-                console.log('blogData...', blogResult);
                 res.end(
                     JSON.stringify(blogData)
                 )
@@ -156,6 +139,7 @@ const serverHandle = (req, res) => {
         const userResult = handleUserRouter(req, res);
         if (userResult) {
             if (needSetCookie) {
+                console.log("Set-Cookie"  , userId);
                 res.setHeader('Set-Cookie', `userid=${userId};httpOnly;expires=${getCookieExpires()}`)
             }
             userResult.then(userData => {
