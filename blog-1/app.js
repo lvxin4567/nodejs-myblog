@@ -32,7 +32,7 @@
 //-----------------mysql v8.0后版本链接不上的解决方案----------------------  
 // mysql -u root -p
 // ALTER USER 'root'@'localhost' IDENTIFIED BY 'password' PASSWORD EXPIRE NEVER;
-// ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123';
+// ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'xin123';
 // FLUSH PRIVILEGES;
 // 作者：car
 // 链接：https://www.imooc.com/article/details/id/45589
@@ -116,12 +116,12 @@ const serverHandle = (req, res) => {
     // 解析 session （使用 redis）
     let needSetCookie = false;
     let userId = req.cookie['userid'];
-    req.sessionId = userId;
     if (!userId) {
         needSetCookie = true;
         userId = `${Date.now()}`;
         set(req.sessionId, {});
     }
+    req.sessionId = userId;
     // else{
     //     req.sessionData = get(req.sessionId);
     // }
@@ -135,7 +135,7 @@ const serverHandle = (req, res) => {
         } else {
             req.session = sessionData
         }
-        return getPostData(req)
+        return getPostData(req);
     }).then((postData) => {
         req.body = postData;
 

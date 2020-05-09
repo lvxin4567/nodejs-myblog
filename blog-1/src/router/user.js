@@ -5,6 +5,7 @@ const {
     SuccessModel,
     ErrorModel
 } = require('../model/resModel');
+const {set , get} = require('../db/redis');
 
 const getCookieExpires = () => {
     const d = new Date();
@@ -29,6 +30,13 @@ const handleUserRouter = (req, res) => {
                 req.session.username = data.username;
                 req.session.realname = data.realname;
                 console.log('req.session is ' , req.session);
+
+                //写入redis
+                set(req.sessionId , req.session);
+
+                get(req.sessionId).then(sessionData=>{
+                    console.log("sessionData:", sessionData );
+                })
                 return new SuccessModel();
             }
             return new ErrorModel('登陆失败');
