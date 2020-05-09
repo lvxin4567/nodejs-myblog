@@ -23,11 +23,16 @@ const handBlogRouter = (req, res) => {
     if (req.method === 'GET' && req.path === '/api/blog/list') {
         let author = req.query.author || ''
         const keyword = req.query.keyword || ''
-        let loginResult = loginCheck(req);
-        if(loginResult){
-            return loginResult;
+        if (req.query.isadmin) {
+            // 管理员界面
+            const loginCheckResult = loginCheck(req)
+            if (loginCheckResult) {
+                // 未登录
+                return loginCheckResult
+            }
+            // 强制查询自己的博客
+            author = req.session.username
         }
-        author = req.session.username;
         const result = getList(author, keyword)
         return result.then(listData => {
             return new SuccessModel(listData)
@@ -45,6 +50,7 @@ const handBlogRouter = (req, res) => {
         if(loginResult){
             return loginResult;
         }
+        req.body.author = req.session.username
         const result = newBlog(req.body);
         return result.then(data => {
             return new SuccessModel(data);
@@ -70,6 +76,7 @@ const handBlogRouter = (req, res) => {
         if(loginResult){
             return loginResult;
         }
+        const author = req.session.username;
         const result = delBlog(req.query.id , author);
         return result.then(val=>{
             if(val){
