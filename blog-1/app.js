@@ -119,14 +119,13 @@ const serverHandle = (req, res) => {
             req.session = sessionData
         }
         return getPostData(req)
-    }).then((postData) => {
+    }).then(postData => {
         req.body = postData;
 
         const blogResult = handleBlogRouter(req, res);
         if (blogResult) {
             if (needSetCookie) {
-                console.log("Set-Cookie"  , userId);
-                res.setHeader('Set-Cookie', `userid=${userId};httpOnly;expires=${getCookieExpires()}`)
+                res.setHeader('Set-Cookie', `userid=${userId}; path=/; httpOnly; expires=${getCookieExpires()}`)
             }
             blogResult.then(blogData => {
                 res.end(
@@ -139,8 +138,7 @@ const serverHandle = (req, res) => {
         const userResult = handleUserRouter(req, res);
         if (userResult) {
             if (needSetCookie) {
-                console.log("Set-Cookie"  , userId);
-                res.setHeader('Set-Cookie', `userid=${userId};httpOnly;expires=${getCookieExpires()}`)
+                res.setHeader('Set-Cookie', `userid=${userId}; path=/; httpOnly; expires=${getCookieExpires()}`)
             }
             userResult.then(userData => {
                 res.end(JSON.stringify(userData))
