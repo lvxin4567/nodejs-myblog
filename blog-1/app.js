@@ -29,6 +29,14 @@
 // 进程内存有限 访问量过大怎么办 内存暴增怎么办
 // 第二 正式线上运行的是多进程 进程之间内存无法共享
 
+//---------redis与mysql的区别---------------
+//redis是内存数据库  mysql是硬盘数据库  redis成本更高 读取速度也越快
+
+//---------安全问题---------------------
+//1.防止sql注入(防止玩家用sql语句进行攻击)  解决方法:对用户进行的需要拼接的sql进行escape操作  对敏感的字符进行转义
+//2.防止XSS攻击(客户输入的内容具有js代码块<script>alert 1</script>) 使用node内置模块XSS进行解决
+//3.信息加密(如果数据库被攻破 也不能泄露玩家的密码) 常见的加密方式crypto base64 
+
 //-----------------mysql v8.0后版本链接不上的解决方案----------------------  
 // mysql -u root -p
 // ALTER USER 'root'@'localhost' IDENTIFIED BY 'password' PASSWORD EXPIRE NEVER;
@@ -41,7 +49,7 @@
 const handleBlogRouter = require('./src/router/blog');
 const handleUserRouter = require('./src/router/user');
 const { get, set } = require('./src/db/redis');
-
+const {writeLog} = require('./src/utils/log');
 const querystring = require('querystring');
 
 // let SESSION_DATA = {};
@@ -78,6 +86,9 @@ const getCookieExpires = () => {
 }
 
 const serverHandle = (req, res) => {
+    //日志  contrab定时生成时间段日志
+    writeLog(`${req.method}--${req.url}--${req.headers['user-agent']}--${Date.now()}`);
+
     //设置返回格式
     res.setHeader('Content-type', 'application/json');
 
@@ -96,8 +107,6 @@ const serverHandle = (req, res) => {
         const val = item.split("=")[1].trim();
         req.cookie[key] = val;
     });
-
-
 
     // 解析 session （使用 redis）
     let needSetCookie = false;

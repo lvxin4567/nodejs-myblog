@@ -7,11 +7,12 @@ const con = mysql.createConnection(MYSQL_CONF);
 con.connect();
 
 function exec(sql) {
+    console.log('执行sql:' , sql);
     const promise = new Promise((resolve, reject) => {
         con.query(sql ,  (err, result) => {
             if (err) {
                 reject(err);
-                return;
+                return null;
             }
             resolve(result);
         })
@@ -21,5 +22,6 @@ function exec(sql) {
 
 
 module.exports = {
-    exec
+    exec , 
+    escape : mysql.escape
 }
