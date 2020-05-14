@@ -22,5 +22,12 @@
                 "action": "openExternally"
               }
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "crypto Program",
+            "program": "${workspaceFolder}/crypto_test/crypto.js",
+        },
+
     ]
 }
