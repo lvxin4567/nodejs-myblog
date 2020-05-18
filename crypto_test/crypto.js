@@ -67,14 +67,11 @@ var CryptoJS = require("crypto-js");
 var data = [{ id: 1 }, { id: 2 }]
 
 // Encrypt
+//AES  Advanced Encryption Standard
 var ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), 'secret key 123');
-
+console.log(ciphertext.toString());
 // Decrypt
 var bytes = CryptoJS.AES.decrypt(ciphertext.toString(), 'secret key 123');
-// var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
-console.log(bytes);
-
-
-console.log(4 << 2);
-
+console.log(decryptedData);
