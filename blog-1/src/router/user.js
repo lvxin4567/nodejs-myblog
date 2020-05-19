@@ -29,6 +29,7 @@ const handleUserRouter = (req, res) => {
                 req.session.username = data.username;
                 req.session.realname = data.realname;
                 //同步到redis
+                console.log('set-redis' , req.sessionId , req.session);
                 set(req.sessionId , req.session);
                 return new SuccessModel();
             }

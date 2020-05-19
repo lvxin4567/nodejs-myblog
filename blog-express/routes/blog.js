@@ -18,19 +18,25 @@ const {
   ErrorModel
 } = require('../model/resModel');
 
+
+
 router.get('/list', function(req, res, next) {
   let author = req.query.author || ''
   const keyword = req.query.keyword || ''
-  // if (req.query.isadmin) {
-  //     // 管理员界面
-  //     const loginCheckResult = loginCheck(req)
-  //     if (loginCheckResult) {
-  //         // 未登录
-  //         return loginCheckResult
-  //     }
-  //     // 强制查询自己的博客
-  //     author = req.session.username
-  // }
+  if (req.query.isadmin) {
+    console.log('is admin')
+    // 管理员界面
+    if (req.session.username == null) {
+        console.error('is admin, but no login')
+        // 未登录
+        res.json(
+            new ErrorModel('未登录')
+        )
+        return
+    }
+    // 强制查询自己的博客
+    author = req.session.username
+}
   const result = getList(author, keyword)
   return result.then(listData => {
       res.json(

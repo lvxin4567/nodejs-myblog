@@ -13,12 +13,24 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "blog Program",
+            "name": "blog-1 Program",
             "program": "${workspaceFolder}/blog-1/bin/www.js",
             "cwd": "${workspaceFolder}",
             "serverReadyAction": {
                 "pattern": "listening on port ([0-9]+)",
-                "uriFormat": "http://localhost:8000",
+                "uriFormat": "http://localhost:8080",
+                "action": "openExternally"
+              }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "blog-express",
+            "program": "${workspaceFolder}/blog-express/bin/www.js",
+            "cwd": "${workspaceFolder}",
+            "serverReadyAction": {
+                "pattern": "listening on port ([0-9]+)",
+                "uriFormat": "http://localhost:8080",
                 "action": "openExternally"
               }
         },
@@ -28,6 +40,7 @@
             "name": "crypto Program",
             "program": "${workspaceFolder}/crypto_test/crypto.js",
         },
+
 
     ]
 }
