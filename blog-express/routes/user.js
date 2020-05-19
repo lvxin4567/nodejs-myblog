@@ -16,7 +16,6 @@ router.post('/login', function (req, res, next) {
     } = req.body;
     const result = login(username, password);
     return result.then(data => {
-        console.log('登录数据...' , data , req.session );
         if (data.username) {
             //设置session
             req.session.username = data.username;

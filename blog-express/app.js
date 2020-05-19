@@ -1,6 +1,7 @@
 var createError = require('http-errors'); //如果404错误页的处理
 var express = require('express');
 var path = require('path');
+var fs = require('fs');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const session = require('express-session');
@@ -17,8 +18,21 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+const env = process.env.NODE_ENV // 环境参数
+if (env !== 'production') {
+  //开发  or  测试
+  app.use(logger('dev')); //写日志
+} else {
+  const logFileName = path.join(__dirname, 'logs', 'access.log');
+  const writeStream = fs.createWriteStream(logFileName, {
+    flags: 'a'
+  })
 
-app.use(logger('dev')); //写日志
+  app.use(logger('combined', {
+    stream: writeStream
+  }));
+}
+
 app.use(express.json()); //处理post请求中的json数据
 app.use(express.urlencoded({
   extended: false
