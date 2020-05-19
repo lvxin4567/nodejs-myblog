@@ -12,6 +12,11 @@ const RedisStore = require('connect-redis')(session)
 const userRouter = require('./routes/user');
 const blogRouter = require('./routes/blog');
 
+//使用express的总结
+//1.写法上的改变  许多杂碎的东西不用操心 例如res.json req.query不用自己获取
+//2.使用express-session connect-redis 还有登陆中间件
+//3.使用morgan管理日志
+
 
 var app = express();
 
