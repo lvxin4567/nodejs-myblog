@@ -42,9 +42,7 @@
 // ALTER USER 'root'@'localhost' IDENTIFIED BY 'password' PASSWORD EXPIRE NEVER;
 // ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'xin123';
 // FLUSH PRIVILEGES;
-// 作者：car
-// 链接：https://www.imooc.com/article/details/id/45589
-// 来源：慕课网
+// https://blog.csdn.net/airdark_long/article/details/82588064
 
 const handleBlogRouter = require('./src/router/blog');
 const handleUserRouter = require('./src/router/user');

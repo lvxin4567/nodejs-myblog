@@ -2,6 +2,10 @@
     // 使用 IntelliSense 了解相关属性。 
     // 悬停以查看现有属性的描述。
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+
+    //launch.json配置属性
+    //https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
+
     "version": "0.2.0",
     "configurations": [
         {
@@ -22,15 +26,16 @@
                 "action": "openExternally"
               }
         },
-        {
+        {  
             "type": "node",
             "request": "launch",
             "name": "blog-express",
-            "program": "${workspaceFolder}/blog-express/bin/www.js",
+            "program": "${workspaceFolder}/blog-express/bin/www",
             "cwd": "${workspaceFolder}",
             "serverReadyAction": {
                 "pattern": "listening on port ([0-9]+)",
-                "uriFormat": "http://localhost:8080",
+                "uriFormat": "http://localhost:s%",
+                // "action": "debugWithChrome"
                 "action": "openExternally"
               }
         },
@@ -40,7 +45,6 @@
             "name": "crypto Program",
             "program": "${workspaceFolder}/crypto_test/crypto.js",
         },
-
-
     ]
 }
+

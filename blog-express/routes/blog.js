@@ -22,14 +22,25 @@ const loginCheck = require('../middleware/loginCheck');
 
 
 
-router.get('/list', loginCheck, function (req, res, next) {
+router.get('/list' , function (req, res, next) {
   let author = req.query.author || ''
   const keyword = req.query.keyword || ''
+
   if (req.query.isadmin) {
-    console.log('is admin')
-    // 强制查询自己的博客
-    author = req.session.username
+      console.log('is admin')
+      // 管理员界面
+      if (req.session.username == null) {
+          console.error('is admin, but no login')
+          // 未登录
+          res.json(
+              new ErrorModel('未登录')
+          )
+          return
+      }
+      // 强制查询自己的博客
+      author = req.session.username
   }
+  console.log('author' , author);
   const result = getList(author, keyword)
   return result.then(listData => {
     res.json(
