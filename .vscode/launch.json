@@ -12,7 +12,7 @@
             "type": "node",
             "request": "launch",
             "name": "test Program",
-            "program": "${workspaceFolder}/common_js_test/b.js",
+            "program": "${workspaceFolder}/lib/express/test.js",
         },
         {
             "type": "node",
