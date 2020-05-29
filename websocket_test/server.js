@@ -30,10 +30,4 @@ wss.on('connection', function (ws) {
   ws.on('error', (err) => {
     console.log('socket err', err);
   })
-
-  ws.addListener('ping',(data)=>{
-    console.log(data);
-  })
-
-
 });
