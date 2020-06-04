@@ -1,4 +1,4 @@
-import { EventListenerInfo } from "./Event";
+import { EventListenerInfo } from "./EventManager";
 
 export class eventQueue{
 

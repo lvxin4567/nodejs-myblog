@@ -6,37 +6,40 @@ export interface EventListenerInfo {
     args?: any[],
 }
 
-export class Event {
-    eventMap: { [key: string]: EventListenerInfo } = null;
+export class EventManager {
+    eventManager: { [key: string]: EventListenerInfo } = null;
 
-    static __INS__: Event = null;
+    static __INS__: EventManager = null;
     static getInstance() {
-        if (Event.__INS__ == null) {
-            Event.__INS__ = new Event();
+        if (EventManager.__INS__ == null) {
+            EventManager.__INS__ = new EventManager();
         }
-        return Event.__INS__;
+        return EventManager.__INS__;
     }
 
     constructor() {
-        this.eventMap = {};
+        this.eventManager = {};
     }
-
 
     public on = this.event_addListener;
     event_addListener(eventName: string, listener: (...args: any[]) => void, caller: any) {
-        if (this.eventMap[eventName]) {
+        if (this.eventManager[eventName]) {
             console.error(`${eventName}事件已经注册`);
             return;
         }
-        this.eventMap[eventName] = { caller: caller, listener: listener };
+        this.eventManager[eventName] = { caller: caller, listener: listener };
     }
 
 
     public emit = this.event_dispatch;
     event_dispatch(eventName: string, ...args: any) {
-        let info: EventListenerInfo = this.eventMap[eventName];
+        let info: EventListenerInfo = this.eventManager[eventName];
         // info.listener.call(info.caller, args)
-        info.args = args;
+        if(args && args.length > 0){
+            info.args = args;
+        }else{
+            info.args = [];
+        }
         eventQueue.getInstance().eventQueue.push(info);
     }
 

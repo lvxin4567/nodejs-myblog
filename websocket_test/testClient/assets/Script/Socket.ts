@@ -1,36 +1,107 @@
-import { Event } from "./Event";
+import { EventManager } from "./EventManager";
+import { eventQueue } from "./EventQueue";
+import { NetManager } from "./NetManager"
 
 export const SOCKET_CONF = {
     host: '127.0.0.1',
     port: '8001'
 }
-
+export interface socketData {
+    msghead: string,
+    msgdata?: any,
+    msgtime?: number
+}
 
 export class Socket {
     private ws: WebSocket = null;
     __lastMsgTime = 0;
+    eventQueue: eventQueue = null;
+    HeartCheck: cc.Component = null;
+    name: string = "";
+    private _isNeedConnect: boolean = false; //是否应该为连接状态
+    private _isInitiative: boolean = false;//是否主动断开
+    private _isClose:boolean = false;//是否为关闭状态
 
-    constructor(url: string) {
-        this.ws = new WebSocket(url);
-        this.ws.binaryType = 'arraybuffer';
-        this.ws.onopen = this.__onOpen.bind(this);
-        this.ws.onmessage = this.__onmessage.bind(this);
-        this.ws.onclose = this.__onclose.bind(this);
-        this.ws.onerror = this.__onError.bind(this)
+    constructor(name: string) {
+        this.name = name;
+    }
+
+    doConnect(data: { ip: string, port: string }) {
+        this._isNeedConnect = true;
+        this._isClose = false;
+        this._isInitiative = false;
+
+        let url: string = `ws://${data.ip}:${data.port}`;
+        this.connect(url);
+    }
+
+    connect(url: string) {
+        try {
+            console.log(`${this.name}socket开始链接${url}`)
+            this.ws = new WebSocket(url);
+            this.ws.binaryType = 'arraybuffer';
+            this.ws.onopen = this.__onOpen.bind(this);
+            this.ws.onmessage = this.__onmessage.bind(this);
+            this.ws.onclose = this.__onclose.bind(this);
+            this.ws.onerror = this.__onError.bind(this)
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     private __onOpen() {
         console.log("socket 链接成功");
+        this._isNeedConnect = true;
+        NetManager.getInstance().setRunningSocket(this.name, this);
+
+        this.eventQueue = eventQueue.getInstance();
+        this.eventQueue.start();
+
+        NetManager.getInstance().start();
+
         this.__lastMsgTime = Date.now();
         this.__doPing();
     }
 
     private __onmessage(e) {
-        // console.log('onmessage', e);
-        this.__lastMsgTime = Date.now();
+        console.log('onmessage', e);
         let data = JSON.parse(e.data);
-        Event.getInstance().emit(data.msghead, !data.msgdata ? {} : JSON.parse(data.msgdata));
+        if (data.msghead !== 'ping') {
+            EventManager.getInstance().emit(data.msghead, !data.msgdata ? {} : JSON.parse(data.msgdata));
+        }
+        this.__lastMsgTime = Date.now() / 1000;
     }
+
+    public getLastTime() {
+        return this.__lastMsgTime;
+    }
+    public getIsConnected() {
+        return this._isNeedConnect;
+    }
+    public getInitiative(): boolean {
+        return this._isInitiative;
+    }
+
+    close(data ?:{Initiative:boolean }){
+        this.__clearT();
+        if (!this.ws) { return; }
+        if (data) {
+            this._isInitiative = !!data.Initiative;
+        } else {
+            this._isInitiative = false;
+        }
+        if (this._isInitiative) {
+            this._isNeedConnect = false;
+        }
+        this._isClose = true;
+        this.ws.onopen = function () { };
+        this.ws.onmessage = function () { };
+        this.ws.onclose = function () { };
+        this.ws.onerror = function () { };
+        this.ws.close();
+        this.ws = null;
+    }
+
 
     private __onclose(e) {
         cc.log(e);
@@ -57,6 +128,7 @@ export class Socket {
 
         console.log("socket已断开：", JSON.stringify(e));
         // kaayou.emit( "ws::onClose");
+        this._isNeedConnect = false;
         this.ws = null;
     }
 
@@ -64,24 +136,24 @@ export class Socket {
 
     }
 
-    send(data: { msghead: string, msgdata?: any }) {
+    send(data: socketData) {
         if (data.msgdata) {
             console.log("socket发送的数据", data.msgdata);
         }
-        let toData: { head: string, data?: string } = {
-            head: data.msghead
+        if (!data.msgtime) {
+            data.msgtime = Date.now();
         }
         if (data.msgdata) {
-            toData.data = JSON.stringify(data.msgdata);
+            data.msgdata = JSON.stringify(data.msgdata);
         }
-        this.ws.send(JSON.stringify(toData));
+        this.ws.send(JSON.stringify(data));
     }
 
     private __t = null;
     private __doPing() {
         let self = this;
         this.send({ msghead: "ping" });
-        let pingTime = 5000;
+        let pingTime = 3000;
         this.__t = setTimeout(function () {
             self.__doPing.apply(self);
         }, pingTime);

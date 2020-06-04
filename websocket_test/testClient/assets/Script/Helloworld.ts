@@ -1,6 +1,5 @@
 import { Socket, SOCKET_CONF } from "./socket";
-import { Event } from "./Event";
-import { eventQueue } from "./EventQueue";
+import { EventManager } from "./EventManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -20,18 +19,17 @@ export default class Helloworld extends cc.Component {
     btn_send: cc.Button = null;
 
     ws: Socket = null;
-    eventQueue: eventQueue = null;
 
     protected _wait: boolean = false;
 
     start() {
         // init logic
         this.label.string = this.text;
-        this.eventQueue = eventQueue.getInstance();
-        this.eventQueue.start();
-        this.ws = new Socket(`ws://${SOCKET_CONF.host}:${SOCKET_CONF.port}`);
 
-        Event.getInstance().on("test", (data) => {
+        this.ws = new Socket('lobby');
+        this.ws.doConnect({ ip: SOCKET_CONF.host, port: SOCKET_CONF.port });
+
+        EventManager.getInstance().on("test", (data) => {
             if (this._wait) {
                 return false;
             }
@@ -40,8 +38,4 @@ export default class Helloworld extends cc.Component {
         }, this);
     }
 
-    sendMsg() {
-        let msg = this.editBox.string;
-        this.ws.send({ msghead: "test", msgdata: msg });
-    }
 }
