@@ -1,6 +1,6 @@
 import { EventListenerInfo } from "./EventManager";
 
-export class eventQueue{
+export class eventQueue {
 
     eventQueue: Array<EventListenerInfo> = null;
     private _isOpen: boolean = false;
@@ -18,35 +18,32 @@ export class eventQueue{
     }
     release() {
         this.eventQueue = [];
+        if(this._t){
+            clearInterval(this._t)
+            this._t = null;
+        }
     }
-    
+
     _t = null;
-    start(){
-        this._isOpen = true;
+    start() {
         this.release();
         let self = this;
+        this._isOpen = true;
         this._t = setInterval(function () {
             self._loop()
         }, 0);
     }
-    
-    _loop(){
-        if(!this._isOpen){
+
+    _loop() {
+        if (!this._isOpen) {
             return;
         }
-        if(this.eventQueue.length > 0){
+        if (this.eventQueue.length > 0) {
             let info = this.eventQueue[0];
-            if(true === info.listener.call(info.caller , info.args)){
+            if (true === info.listener.call(info.caller, info.args)) {
                 this.eventQueue.shift();
             }
         }
     }
-
-
-
-    
-
-
-
 
 }

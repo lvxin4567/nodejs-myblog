@@ -1,5 +1,3 @@
-import { eventQueue } from "./EventQueue";
-
 export interface EventListenerInfo {
     caller: any,
     listener: Function,
@@ -23,24 +21,19 @@ export class EventManager {
 
     public on = this.event_addListener;
     event_addListener(eventName: string, listener: (...args: any[]) => void, caller: any) {
-        if (this.eventManager[eventName]) {
-            console.error(`${eventName}事件已经注册`);
-            return;
-        }
+        // if (this.eventManager[eventName]) {
+        //     console.error(`${eventName}事件已经注册`);
+        //     return;
+        // }
         this.eventManager[eventName] = { caller: caller, listener: listener };
     }
 
 
     public emit = this.event_dispatch;
-    event_dispatch(eventName: string, ...args: any) {
+    event_dispatch(eventName: string, args: any) {
         let info: EventListenerInfo = this.eventManager[eventName];
-        // info.listener.call(info.caller, args)
-        if(args && args.length > 0){
-            info.args = args;
-        }else{
-            info.args = [];
-        }
-        eventQueue.getInstance().eventQueue.push(info);
+        info.listener.call(info.caller, args)
+        // eventQueue.getInstance().eventQueue.push(info);
     }
 
 }
