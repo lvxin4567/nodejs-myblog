@@ -45,6 +45,19 @@
             "name": "crypto Program",
             "program": "${workspaceFolder}/crypto_test/crypto.js",
         },
+        {  
+            "type": "node",
+            "request": "launch",
+            "name": "websocket",
+            "program": "${workspaceFolder}/websocket_test/Server/hallServer.js",
+            "cwd": "${workspaceFolder}",
+            "serverReadyAction": {
+                "pattern": "listening on port ([0-9]+)",
+                "uriFormat": "http://localhost:s%",
+                // "action": "debugWithChrome"
+                "action": "openExternally"
+              }
+        },
     ]
 }
 

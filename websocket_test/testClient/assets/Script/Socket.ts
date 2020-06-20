@@ -2,10 +2,10 @@ import { EventManager } from "./EventManager";
 import { eventQueue } from "./EventQueue";
 import { NetManager } from "./NetManager"
 
-export const SOCKET_CONF = {
+export const SOCKET_CONF_HALL = {
     host: '127.0.0.1',
     port: '8001'
-}
+};
 export interface socketData {
     msghead: string,
     msgdata?: any,
@@ -20,25 +20,25 @@ export class Socket {
     name: string = "";
     private _isNeedConnect: boolean = false; //是否应该为连接状态
     private _isInitiative: boolean = false;//是否主动断开
-    private _isClose:boolean = false;//是否为关闭状态
+    private _isClose: boolean = true;//是否为关闭状态
+
+    private linkUrl: string = "";
 
     constructor(name: string) {
         this.name = name;
     }
 
     doConnect(data: { ip: string, port: string }) {
-        this._isNeedConnect = true;
-        this._isClose = false;
-        this._isInitiative = false;
-
-        let url: string = `ws://${data.ip}:${data.port}`;
-        this.connect(url);
+        this.linkUrl = `ws://${data.ip}:${data.port}`;
+        this.connect();
     }
 
-    connect(url: string) {
+    connect() {
+        this._isNeedConnect = true;
+
         try {
-            console.log(`${this.name}socket开始链接${url}`)
-            this.ws = new WebSocket(url);
+            console.log(`${this.name}socket开始链接${this.linkUrl}`)
+            this.ws = new WebSocket(this.linkUrl);
             this.ws.binaryType = 'arraybuffer';
             this.ws.onopen = this.__onOpen.bind(this);
             this.ws.onmessage = this.__onmessage.bind(this);
@@ -50,14 +50,14 @@ export class Socket {
     }
 
     private __onOpen() {
-        console.log("socket 链接成功");
-        this._isNeedConnect = true;
+        console.log(`${this.linkUrl}链接成功`);
+        this._isClose = false;
+
         NetManager.getInstance().setRunningSocket(this.name, this);
+        NetManager.getInstance().start();
 
         this.eventQueue = eventQueue.getInstance();
         this.eventQueue.start();
-
-        NetManager.getInstance().start();
 
         this.__lastMsgTime = Date.now();
         this.__doPing();
@@ -66,9 +66,7 @@ export class Socket {
     private __onmessage(e) {
         console.log('onmessage', e);
         let data = JSON.parse(e.data);
-        if (data.msghead !== 'ping') {
-            EventManager.getInstance().emit(data.msghead, !data.msgdata ? {} : JSON.parse(data.msgdata));
-        }
+        EventManager.getInstance().emit(`ws::msg::${data.msghead}`, !data.msgdata ? {} : JSON.parse(data.msgdata));
         this.__lastMsgTime = Date.now() / 1000;
     }
 
@@ -81,30 +79,41 @@ export class Socket {
     public getInitiative(): boolean {
         return this._isInitiative;
     }
+    public getIsClose() {
+        return this._isClose;
+    }
 
-    close(data ?:{Initiative:boolean }){
+    close(data?: { Initiative: boolean }) {
+        cc.log(this.name + "close");
         this.__clearT();
         if (!this.ws) { return; }
+        // if (data) {
+        //     this._isInitiative = !!data.Initiative;
+        // } else {
+        //     this._isInitiative = false;
+        // }
+        // if (this._isInitiative) {
+        //     this._isNeedConnect = false;
+        // }
         if (data) {
-            this._isInitiative = !!data.Initiative;
+            this._isNeedConnect = !data.Initiative;
         } else {
-            this._isInitiative = false;
-        }
-        if (this._isInitiative) {
-            this._isNeedConnect = false;
+            this._isNeedConnect = true;
         }
         this._isClose = true;
-        this.ws.onopen = function () { };
-        this.ws.onmessage = function () { };
-        this.ws.onclose = function () { };
-        this.ws.onerror = function () { };
-        this.ws.close();
-        this.ws = null;
+        if (this.ws.readyState == WebSocket.OPEN) {
+            this.ws.onopen = function () { };
+            this.ws.onmessage = function () { };
+            this.ws.onclose = function () { };
+            this.ws.onerror = function () { };
+            this.ws.close();
+            this.ws = null;
+        }
     }
 
 
     private __onclose(e) {
-        cc.log(e);
+        cc.log(this.name + "__onclose");
         this.__clearT();
         //e.code
         // 1000          正常关闭       当你的会话成功完成时发送这个代码
@@ -128,15 +137,26 @@ export class Socket {
 
         console.log("socket已断开：", JSON.stringify(e));
         // kaayou.emit( "ws::onClose");
-        this._isNeedConnect = false;
+        if (e.code == 1000) {
+            this._isNeedConnect = false;
+        } else {
+            this._isNeedConnect = true;
+        }
+        this._isClose = true;
         this.ws = null;
     }
 
     private __onError(err, a) {
-
+        console.log(err);
     }
 
     send(data: socketData) {
+        if(!this.ws){
+            return;
+        }
+        if (this.ws.readyState != WebSocket.OPEN) {
+            return;
+        }
         if (data.msgdata) {
             console.log("socket发送的数据", data.msgdata);
         }
@@ -152,7 +172,7 @@ export class Socket {
     private __t = null;
     private __doPing() {
         let self = this;
-        this.send({ msghead: "ping" });
+        this.send({ msghead: `${this.name}_ping` });
         let pingTime = 3000;
         this.__t = setTimeout(function () {
             self.__doPing.apply(self);
@@ -167,7 +187,4 @@ export class Socket {
         }
         this.__t = null;
     }
-
-
-
 }
