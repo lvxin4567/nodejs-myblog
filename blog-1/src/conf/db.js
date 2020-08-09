@@ -1,15 +1,39 @@
-let MYSQL_CONF = {
-    host: 'localhost',
-    user: 'root',
-    password: 'xin123',
-    port: '3306',
-    database: 'myblog'
+const env = process.env.NODE_ENV;  //环境参数
+
+console.log("当前环境参数:", env)
+
+let MYSQL_CONF;
+let REDIS_CONF;
+
+
+if (env === 'dev') {
+    MYSQL_CONF = {
+        host: 'localhost',
+        user: 'root',
+        password: 'xin123',
+        port: '3306',
+        database: 'myblog'
+    }
+    REDIS_CONF = {
+        port: 6379,
+        host: '127.0.0.1'
+    }
 }
 
-let REDIS_CONF = {
-    port:6379,
-    host:'127.0.0.1'
+if (env === 'production') {
+    MYSQL_CONF = {
+        host: 'localhost',
+        user: 'root',
+        password: 'xin123',
+        port: '3306',
+        database: 'myblog'
+    }
+    REDIS_CONF = {
+        port: 6379,
+        host: '127.0.0.1'
+    }
 }
+
 
 module.exports = {
     MYSQL_CONF,

@@ -4,7 +4,7 @@ const { REDIS_CONF } = require('../conf/db')
 
 //创建
 console.log("REDIS链接配置为...", JSON.stringify(REDIS_CONF))
-const redisClient = redis.createClient(REDIS_CONF.port , REDIS_CONF.host);
+const redisClient = redis.createClient(REDIS_CONF.port, REDIS_CONF.host);
 redisClient.on('error', err => {
     console.error(err)
 })
